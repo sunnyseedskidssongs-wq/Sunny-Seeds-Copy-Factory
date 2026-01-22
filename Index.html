@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sunny Seeds Content Factory</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
     <style>
         @keyframes spin { to { transform: rotate(360deg); } }
         .animate-spin { animation: spin 1s linear infinite; }
@@ -27,7 +26,7 @@
             
             <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-4">
                 <p class="text-sm text-blue-800">
-                    <strong>🎬 Generates:</strong> 30 complete video packages • Stories • Veo 3 Prompts • Voiceover Scripts • YouTube Copy • Music Links
+                    <strong>🎬 Generates per Month:</strong> 30 Long-Form Videos (3-6 min) + 90 YouTube Shorts (15-60 sec) • Complete with Veo 3 Prompts • Scripts • YouTube Copy • Music
                 </p>
             </div>
         </div>
@@ -50,7 +49,7 @@
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Video Length Preference
+                        Long-Form Video Length
                     </label>
                     <select id="videoLength" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
                         <option value="short">Short (3-4 min / 20-30 scenes)</option>
@@ -71,7 +70,7 @@
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
                 <p class="text-xs text-gray-500 mt-2">
-                    Stored locally. Cost: ~$2-5 for 30 days of content (one-time generation).
+                    Stored locally. Cost: ~$3-7 for 30 long videos + 90 shorts (one-time generation).
                 </p>
             </div>
 
@@ -83,7 +82,7 @@
                 class="w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:from-yellow-500 hover:to-yellow-700 transition-all flex items-center justify-center gap-3 shadow-lg"
             >
                 <span class="text-2xl">🚀</span>
-                Generate 30-Day Content Plan
+                Generate 30 Days (Videos + Shorts)
             </button>
         </div>
 
@@ -93,7 +92,7 @@
                 <svg class="w-6 h-6 animate-spin text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                <span class="font-bold text-gray-800">Generating your 30-day content...</span>
+                <span class="font-bold text-gray-800">Generating your content...</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-3">
                 <div id="progressBar" class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -104,8 +103,21 @@
         <!-- Results -->
         <div id="resultsCard" class="hidden bg-white rounded-2xl shadow-xl p-8">
             <div class="mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">🎉 Your 30-Day Content is Ready!</h2>
-                <p class="text-gray-600">Click any button below to download that day's complete video package (Word document)</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">🎉 Your Content is Ready!</h2>
+                <p class="text-gray-600 mb-4">Each day includes: 1 Long-Form Video + 3 YouTube Shorts</p>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-4">
+                        <div class="text-2xl mb-2">📹</div>
+                        <div class="font-bold text-blue-900">30 Long-Form Videos</div>
+                        <div class="text-sm text-blue-700">3-6 minute educational content</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-pink-50 to-pink-100 border-2 border-pink-300 rounded-lg p-4">
+                        <div class="text-2xl mb-2">📱</div>
+                        <div class="font-bold text-pink-900">90 YouTube Shorts</div>
+                        <div class="text-sm text-pink-700">15-60 second quick lessons</div>
+                    </div>
+                </div>
             </div>
 
             <div id="downloadButtons" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -151,7 +163,7 @@
             const duration = videoLength === 'short' ? '3-4' : videoLength === 'long' ? '5-6' : '4-5';
 
             try {
-                updateProgress(20, 'Generating 30 educational topics...');
+                updateProgress(20, 'Generating 30 days of content...');
 
                 const response = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
@@ -169,31 +181,59 @@
 
 Main character: ${SUNNY_DESCRIPTION}
 
-Generate 30 DAYS of complete video content for ${month}. Each day must be a complete, production-ready package.
+Generate 30 DAYS of complete video content for ${month}. Each day must include BOTH a long-form video AND 3 YouTube Shorts.
 
 For EACH DAY (1-30), provide:
 
-DAY [NUMBER]: [Educational Topic Title]
+═══════════════════════════════════════════════════════════════
+DAY [NUMBER]: [Main Educational Topic]
+═══════════════════════════════════════════════════════════════
+
+📹 LONG-FORM VIDEO (${duration} minutes)
 
 1. STORY: A fun, engaging 2-paragraph story where Sunny teaches this concept
 
-2. SCENE BREAKDOWN: ${sceneCount} scenes (each 8 seconds, total ${duration} minutes)
-   For each scene provide:
+2. SCENE BREAKDOWN: ${sceneCount} scenes (each 8 seconds)
+   For each scene:
    - Scene #: [Description]
-   - VEO 3 PROMPT: [Realistic, cinematic prompt including: ${SUNNY_DESCRIPTION}, scene setting, lighting, camera angle, and educational element. Make it look real, not AI-generated]
-   - VOICEOVER (6 sec): [Child-friendly script, exactly 6 seconds when read aloud]
+   - VEO 3 PROMPT: [Realistic cinematic prompt with: ${SUNNY_DESCRIPTION}, setting, lighting, camera angle. Make it photorealistic, not AI-looking]
+   - VOICEOVER (6 sec): [Child-friendly script, max 6 seconds when read aloud]
 
 3. YOUTUBE PACKAGE:
-   - Title: [SEO-optimized, parent and kid-friendly]
-   - Description: [With timestamps 0:00, 0:08, 0:16..., parent info, educational value]
-   - Thumbnail Idea: [Visual concept with Sunny + topic]
-   - Tags: [15-20 tags, comma-separated]
-   - Pinned Comment: [Engaging question for parents/kids]
-   - Music: [Suggest 1 specific track from YouTube Audio Library with mood description]
+   - Title: [SEO-optimized, engaging for parents and kids]
+   - Description: [With scene timestamps (0:00, 0:08, 0:16...), educational value, parent info]
+   - Thumbnail Idea: [Visual with Sunny + topic elements]
+   - Tags: [15-20 relevant tags, comma-separated]
+   - Pinned Comment: [Question to engage viewers]
+   - Music: [YouTube Audio Library track name + mood]
 
-Topics should cover: colors, numbers, shapes, animals, kindness, sharing, emotions, nature, seasons, weather, safety, healthy habits, friendship, family, manners, etc.
+───────────────────────────────────────────────────────────────
 
-Format each day clearly separated. Be creative and educational!`
+📱 YOUTUBE SHORTS (3 Shorts per day)
+
+SHORT 1: [Quick lesson title related to main topic]
+- Duration: [15-60 seconds / 2-7 scenes]
+- Hook: [Attention-grabbing opening line]
+- SCENE BREAKDOWN:
+  Scene #: [Description]
+  VEO 3 PROMPT: [With ${SUNNY_DESCRIPTION}, vertical format optimized]
+  VOICEOVER (6 sec): [Script]
+- YOUTUBE SHORTS PACKAGE:
+  Title: [Catchy, under 60 chars]
+  Description: [With #Shorts, hashtags]
+  Music: [Track suggestion]
+
+SHORT 2: [Different angle/fun fact]
+[Same format as Short 1]
+
+SHORT 3: [Related topic/quick tip]
+[Same format as Short 1]
+
+═══════════════════════════════════════════════════════════════
+
+Topics: colors, numbers, shapes, animals, kindness, emotions, nature, seasons, weather, safety, healthy habits, friendship, family, manners, hygiene, food, body parts, transportation, etc.
+
+Make each day's content cohesive but varied. Shorts should complement the long video but work standalone.`
                         }]
                     })
                 });
@@ -203,7 +243,7 @@ Format each day clearly separated. Be creative and educational!`
                     throw new Error(errorData.error?.message || `API error: ${response.status}`);
                 }
 
-                updateProgress(60, 'AI is creating your content...');
+                updateProgress(60, 'AI is creating your videos and shorts...');
 
                 const data = await response.json();
                 let fullText = '';
@@ -215,13 +255,12 @@ Format each day clearly separated. Be creative and educational!`
 
                 if (!fullText.trim()) throw new Error('Empty response received');
 
-                updateProgress(80, 'Organizing into 30 separate documents...');
+                updateProgress(80, 'Organizing into 30 documents...');
 
-                // Parse into 30 days
                 monthlyContent = parseInto30Days(fullText, month);
 
                 if (monthlyContent.length === 0) {
-                    throw new Error('Could not parse content into days. Try regenerating.');
+                    throw new Error('Could not parse content. Try regenerating.');
                 }
 
                 updateProgress(100, 'Complete! Ready to download.');
@@ -268,12 +307,13 @@ Format each day clearly separated. Be creative and educational!`
             const container = document.getElementById('downloadButtons');
             container.innerHTML = '';
 
-            monthlyContent.forEach((dayData, index) => {
+            monthlyContent.forEach((dayData) => {
                 const btn = document.createElement('button');
                 btn.className = 'bg-gradient-to-br from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105';
                 btn.innerHTML = `
-                    <div class="text-2xl mb-1">📄</div>
+                    <div class="text-2xl mb-1">📦</div>
                     <div class="text-sm">Day ${dayData.day}</div>
+                    <div class="text-xs opacity-75">1 Video + 3 Shorts</div>
                 `;
                 btn.onclick = () => downloadDay(dayData, month);
                 container.appendChild(btn);
@@ -283,13 +323,37 @@ Format each day clearly separated. Be creative and educational!`
         async function downloadDay(dayData, month) {
             const content = dayData.content;
             
-            // Create formatted text document
-            const header = `SUNNY SEEDS - ${month.toUpperCase()}\nDAY ${dayData.day} - COMPLETE VIDEO PACKAGE\nGenerated: ${new Date().toLocaleDateString()}\n\n${'='.repeat(80)}\n\n`;
-            
-            const fullContent = header + content + `\n\n${'='.repeat(80)}\n\nProduced by Sunny Seeds Content Factory\nCharacter: Sunny - Educational content for toddlers ages 2-6`;
+            const header = `╔═══════════════════════════════════════════════════════════════╗
+║           SUNNY SEEDS - ${month.toUpperCase()}                    
+║           DAY ${String(dayData.day).padStart(2, '0')} - COMPLETE CONTENT PACKAGE                 
+║           Generated: ${new Date().toLocaleDateString()}                          
+╚═══════════════════════════════════════════════════════════════╝
 
-            // Download as text file (simpler than DOCX)
-            const blob = new Blob([fullContent], { type: 'text/plain' });
+📦 PACKAGE CONTENTS:
+   • 1 Long-Form Video (3-6 minutes)
+   • 3 YouTube Shorts (15-60 seconds each)
+   • Complete Veo 3 Prompts
+   • Voiceover Scripts
+   • YouTube Copy (Titles, Descriptions, Tags)
+   • Music Suggestions
+
+Character: ${SUNNY_DESCRIPTION}
+
+═══════════════════════════════════════════════════════════════
+
+`;
+            
+            const footer = `
+
+═══════════════════════════════════════════════════════════════
+🌻 Produced by Sunny Seeds Content Factory
+📧 Educational content for toddlers ages 2-6
+🎬 Ready for production with Veo 3
+═══════════════════════════════════════════════════════════════`;
+
+            const fullContent = header + content + footer;
+
+            const blob = new Blob([fullContent], { type: 'text/plain; charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
