@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunny Seeds Content Factory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce { animation: bounce 1s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6 border-4 border-yellow-300">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="text-6xl animate-bounce">🌻</div>
+                <div>
+                    <h1 class="text-4xl font-bold text-yellow-600">Sunny Seeds Content Factory</h1>
+                    <p class="text-gray-600">30-Day Educational Video Content Generator for Toddlers</p>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-4">
+                <p class="text-sm text-blue-800">
+                    <strong>🎬 Generates:</strong> 30 complete video packages • Stories • Veo 3 Prompts • Voiceover Scripts • YouTube Copy • Music Links
+                </p>
+            </div>
+        </div>
+
+        <!-- Input Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Target Month
+                    </label>
+                    <input
+                        type="text"
+                        id="month"
+                        placeholder="e.g., February 2026"
+                        value="February 2026"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    />
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Video Length Preference
+                    </label>
+                    <select id="videoLength" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                        <option value="short">Short (3-4 min / 20-30 scenes)</option>
+                        <option value="medium" selected>Medium (4-5 min / 30-38 scenes)</option>
+                        <option value="long">Long (5-6 min / 38-45 scenes)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Anthropic API Key <a href="https://console.anthropic.com" target="_blank" class="text-yellow-600 hover:text-yellow-700 text-xs">(Get yours here)</a>
+                </label>
+                <input
+                    type="password"
+                    id="apiKey"
+                    placeholder="sk-ant-..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+                <p class="text-xs text-gray-500 mt-2">
+                    Stored locally. Cost: ~$2-5 for 30 days of content (one-time generation).
+                </p>
+            </div>
+
+            <div id="errorBox" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
+
+            <button
+                onclick="generate30Days()"
+                id="generateBtn"
+                class="w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:from-yellow-500 hover:to-yellow-700 transition-all flex items-center justify-center gap-3 shadow-lg"
+            >
+                <span class="text-2xl">🚀</span>
+                Generate 30-Day Content Plan
+            </button>
+        </div>
+
+        <!-- Progress -->
+        <div id="progressBox" class="hidden bg-white rounded-xl shadow-lg p-6 mb-6">
+            <div class="flex items-center gap-3 mb-3">
+                <svg class="w-6 h-6 animate-spin text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span class="font-bold text-gray-800">Generating your 30-day content...</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div id="progressBar" class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p id="progressText" class="text-sm text-gray-600 mt-2">Initializing...</p>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsCard" class="hidden bg-white rounded-2xl shadow-xl p-8">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">🎉 Your 30-Day Content is Ready!</h2>
+                <p class="text-gray-600">Click any button below to download that day's complete video package (Word document)</p>
+            </div>
+
+            <div id="downloadButtons" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <!-- Buttons will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUNNY_DESCRIPTION = "Sunny (3D cartoon character: fluffy golden-brown hair #D4A574, big expressive brown eyes, cheerful smile, yellow t-shirt #FFFACD, blue shorts #87CEEB, white sneakers, optional straw hat #F5DEB3)";
+        
+        let monthlyContent = [];
+
+        window.addEventListener('load', () => {
+            const savedKey = localStorage.getItem('anthropic_api_key');
+            if (savedKey) document.getElementById('apiKey').value = savedKey;
+        });
+
+        async function generate30Days() {
+            const month = document.getElementById('month').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const videoLength = document.getElementById('videoLength').value;
+
+            if (!month) {
+                showError('Please enter a target month');
+                return;
+            }
+            if (!apiKey) {
+                showError('Please enter your Anthropic API key');
+                return;
+            }
+
+            localStorage.setItem('anthropic_api_key', apiKey);
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            hideError();
+            document.getElementById('resultsCard').classList.add('hidden');
+            document.getElementById('progressBox').classList.remove('hidden');
+            updateProgress(10, 'Connecting to AI...');
+
+            const sceneCount = videoLength === 'short' ? '20-30' : videoLength === 'long' ? '38-45' : '30-38';
+            const duration = videoLength === 'short' ? '3-4' : videoLength === 'long' ? '5-6' : '4-5';
+
+            try {
+                updateProgress(20, 'Generating 30 educational topics...');
+
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 16000,
+                        messages: [{
+                            role: 'user',
+                            content: `You are creating educational content for "Sunny Seeds" - a YouTube channel for toddlers ages 2-6.
+
+Main character: ${SUNNY_DESCRIPTION}
+
+Generate 30 DAYS of complete video content for ${month}. Each day must be a complete, production-ready package.
+
+For EACH DAY (1-30), provide:
+
+DAY [NUMBER]: [Educational Topic Title]
+
+1. STORY: A fun, engaging 2-paragraph story where Sunny teaches this concept
+
+2. SCENE BREAKDOWN: ${sceneCount} scenes (each 8 seconds, total ${duration} minutes)
+   For each scene provide:
+   - Scene #: [Description]
+   - VEO 3 PROMPT: [Realistic, cinematic prompt including: ${SUNNY_DESCRIPTION}, scene setting, lighting, camera angle, and educational element. Make it look real, not AI-generated]
+   - VOICEOVER (6 sec): [Child-friendly script, exactly 6 seconds when read aloud]
+
+3. YOUTUBE PACKAGE:
+   - Title: [SEO-optimized, parent and kid-friendly]
+   - Description: [With timestamps 0:00, 0:08, 0:16..., parent info, educational value]
+   - Thumbnail Idea: [Visual concept with Sunny + topic]
+   - Tags: [15-20 tags, comma-separated]
+   - Pinned Comment: [Engaging question for parents/kids]
+   - Music: [Suggest 1 specific track from YouTube Audio Library with mood description]
+
+Topics should cover: colors, numbers, shapes, animals, kindness, sharing, emotions, nature, seasons, weather, safety, healthy habits, friendship, family, manners, etc.
+
+Format each day clearly separated. Be creative and educational!`
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `API error: ${response.status}`);
+                }
+
+                updateProgress(60, 'AI is creating your content...');
+
+                const data = await response.json();
+                let fullText = '';
+                if (data.content && Array.isArray(data.content)) {
+                    for (const block of data.content) {
+                        if (block.type === 'text') fullText += block.text;
+                    }
+                }
+
+                if (!fullText.trim()) throw new Error('Empty response received');
+
+                updateProgress(80, 'Organizing into 30 separate documents...');
+
+                // Parse into 30 days
+                monthlyContent = parseInto30Days(fullText, month);
+
+                if (monthlyContent.length === 0) {
+                    throw new Error('Could not parse content into days. Try regenerating.');
+                }
+
+                updateProgress(100, 'Complete! Ready to download.');
+
+                displayDownloadButtons(month);
+
+                setTimeout(() => {
+                    document.getElementById('progressBox').classList.add('hidden');
+                    document.getElementById('resultsCard').classList.remove('hidden');
+                    document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+
+            } catch (err) {
+                console.error('Error:', err);
+                showError(err.message || 'Generation failed. Please try again.');
+                document.getElementById('progressBox').classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function parseInto30Days(text, month) {
+            const days = [];
+            const dayPattern = /DAY\s+(\d+):/gi;
+            const matches = [...text.matchAll(dayPattern)];
+
+            for (let i = 0; i < matches.length; i++) {
+                const start = matches[i].index;
+                const end = matches[i + 1] ? matches[i + 1].index : text.length;
+                const dayContent = text.substring(start, end).trim();
+                const dayNum = matches[i][1];
+                
+                days.push({
+                    day: parseInt(dayNum),
+                    content: dayContent,
+                    month: month
+                });
+            }
+
+            return days.sort((a, b) => a.day - b.day);
+        }
+
+        function displayDownloadButtons(month) {
+            const container = document.getElementById('downloadButtons');
+            container.innerHTML = '';
+
+            monthlyContent.forEach((dayData, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-gradient-to-br from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-bold py-4 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105';
+                btn.innerHTML = `
+                    <div class="text-2xl mb-1">📄</div>
+                    <div class="text-sm">Day ${dayData.day}</div>
+                `;
+                btn.onclick = () => downloadDay(dayData, month);
+                container.appendChild(btn);
+            });
+        }
+
+        async function downloadDay(dayData, month) {
+            const content = dayData.content;
+            
+            // Create formatted text document
+            const header = `SUNNY SEEDS - ${month.toUpperCase()}\nDAY ${dayData.day} - COMPLETE VIDEO PACKAGE\nGenerated: ${new Date().toLocaleDateString()}\n\n${'='.repeat(80)}\n\n`;
+            
+            const fullContent = header + content + `\n\n${'='.repeat(80)}\n\nProduced by Sunny Seeds Content Factory\nCharacter: Sunny - Educational content for toddlers ages 2-6`;
+
+            // Download as text file (simpler than DOCX)
+            const blob = new Blob([fullContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Sunny-Seeds-Day-${String(dayData.day).padStart(2, '0')}-${month.replace(/\s+/g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function updateProgress(percent, message) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = message;
+        }
+
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.textContent = message;
+            errorBox.classList.remove('hidden');
+            errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideError() {
+            document.getElementById('errorBox').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
